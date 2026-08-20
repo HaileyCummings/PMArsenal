@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}New trip — 33{% endblock %}
+{% block content %}
+<h1>New trip</h1>
+<p class="muted">Fill in what you know. Anything you're not sure about yet can be left blank.</p>
+
+<form method="post" action="{{ url_for('new_trip') }}">
+
+  <h2>The basics</h2>
+  <div class="card">
+    <label>Destination</label>
+    <input type="text" name="destination" required>
+
+    <div class="field-grid">
+      <div>
+        <label>Start date</label>
+        <input type="date" name="start_date" required>
+      </div>
+      <div>
+        <label>End date</label>
+        <input type="date" name="end_date" required>
+      </div>
+    </div>
+
+    <label>Pace</label>
+    <select name="pace_preference">
+      <option value="chill">Chill</option>
+      <option value="mix" selected>Mix</option>
+      <option value="packed">Packed</option>
+    </select>
+
+    <div class="field-grid">
+      <div>
+        <label>Budget — low end (optional)</label>
+        <input type="number" name="budget_min" min="0" step="1">
+      </div>
+      <div>
+        <label>Budget — high end (optional)</label>
+        <input type="number" name="budget_max" min="0" step="1">
+      </div>
+    </div>
+
+    <label>Anything to avoid?</label>
+    <textarea name="avoids" rows="2" placeholder="One per line, e.g. no super early mornings"></textarea>
+  </div>
+
+  <h2>Who's going</h2>
+  <p class="section-intro">One traveler if it's just you. Leave arrival/departure blank if it's not confirmed yet — the engine treats that as "unknown," not "not going."</p>
+  <div id="travelers-container">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>Name</label>
+      <input type="text" name="traveler_name[]">
+      <div class="field-grid">
+        <div>
+          <label>Arrives</label>
+          <input type="date" name="traveler_arrival_date[]">
+          <input type="time" name="traveler_arrival_time[]">
+        </div>
+        <div>
+          <label>Departs</label>
+          <input type="date" name="traveler_departure_date[]">
+          <input type="time" name="traveler_departure_time[]">
+        </div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="add-btn" onclick="addRow('traveler-template', 'travelers-container')">+ Add another traveler</button>
+  <template id="traveler-template">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>Name</label>
+      <input type="text" name="traveler_name[]">
+      <div class="field-grid">
+        <div>
+          <label>Arrives</label>
+          <input type="date" name="traveler_arrival_date[]">
+          <input type="time" name="traveler_arrival_time[]">
+        </div>
+        <div>
+          <label>Departs</label>
+          <input type="date" name="traveler_departure_date[]">
+          <input type="time" name="traveler_departure_time[]">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <h2>Regular commitments</h2>
+  <p class="section-intro">Anything that repeats during the trip, like work hours.</p>
+  <div id="recurring-container"></div>
+  <button type="button" class="add-btn" onclick="addRow('recurring-template', 'recurring-container')">+ Add a recurring commitment</button>
+  <template id="recurring-template">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>What is it?</label>
+      <input type="text" name="recurring_label[]" placeholder="e.g. Work hours">
+      <label>How often?</label>
+      <select name="recurring_frequency[]">
+        <option value="weekday">Weekdays only</option>
+        <option value="daily">Every day</option>
+      </select>
+      <div class="field-grid">
+        <div>
+          <label>Starts</label>
+          <input type="time" name="recurring_start_time[]">
+        </div>
+        <div>
+          <label>Ends</label>
+          <input type="time" name="recurring_end_time[]">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <h2>Anything with a locked-in time</h2>
+  <p class="section-intro">Tickets, reservations, transport — things that happen at a specific time no matter what.</p>
+  <div id="fixed-container"></div>
+  <button type="button" class="add-btn" onclick="addRow('fixed-template', 'fixed-container')">+ Add a fixed-time item</button>
+  <template id="fixed-template">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>What is it?</label>
+      <input type="text" name="fixed_label[]" placeholder="e.g. Costume pickup">
+      <div class="field-grid">
+        <div>
+          <label>Starts</label>
+          <input type="date" name="fixed_start_date[]">
+          <input type="time" name="fixed_start_time[]">
+        </div>
+        <div>
+          <label>Ends</label>
+          <input type="date" name="fixed_end_date[]">
+          <input type="time" name="fixed_end_time[]">
+        </div>
+      </div>
+      <label>Is this also one of your must-dos?</label>
+      <select name="fixed_is_must_do[]">
+        <option value="no">No, just block this time</option>
+        <option value="yes">Yes, it's a must-do</option>
+      </select>
+    </div>
+  </template>
+
+  <h2>Protected time</h2>
+  <p class="section-intro">A block you want left alone on purpose — no plans, no must-dos, nothing scheduled here.</p>
+  <div id="carveout-container"></div>
+  <button type="button" class="add-btn" onclick="addRow('carveout-template', 'carveout-container')">+ Add protected time</button>
+  <template id="carveout-template">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>What's it for?</label>
+      <input type="text" name="carveout_label[]" placeholder="e.g. Recovery morning">
+      <div class="field-grid">
+        <div>
+          <label>Starts</label>
+          <input type="date" name="carveout_start_date[]">
+          <input type="time" name="carveout_start_time[]">
+        </div>
+        <div>
+          <label>Ends</label>
+          <input type="date" name="carveout_end_date[]">
+          <input type="time" name="carveout_end_time[]">
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <h2>Must-dos that need everyone there</h2>
+  <p class="section-intro">These only get scheduled once every traveler has actually arrived.</p>
+  <div id="group-mustdo-container"></div>
+  <button type="button" class="add-btn" onclick="addRow('group-mustdo-template', 'group-mustdo-container')">+ Add a group must-do</button>
+  <template id="group-mustdo-template">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>What is it?</label>
+      <input type="text" name="group_mustdo_label[]" placeholder="e.g. Group Beach Day">
+      <label>Waiting on something before this can happen? (optional)</label>
+      <input type="text" name="group_mustdo_waiting_on[]" placeholder="e.g. C's flight needs to be booked">
+      <div class="field-grid">
+        <div>
+          <label>Needed to resolve by</label>
+          <input type="date" name="group_mustdo_deadline[]">
+        </div>
+        <div>
+          <label>Status</label>
+          <select name="group_mustdo_still_waiting[]">
+            <option value="no">No, it's already confirmed</option>
+            <option value="yes">Yes, still waiting</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <h2>Everything else you want to do</h2>
+  <p class="section-intro">No fixed time, no group requirement — just fit it in where it fits.</p>
+  <div id="flexible-mustdo-container">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>What is it?</label>
+      <input type="text" name="flexible_mustdo_label[]">
+    </div>
+  </div>
+  <button type="button" class="add-btn" onclick="addRow('flexible-mustdo-template', 'flexible-mustdo-container')">+ Add another must-do</button>
+  <template id="flexible-mustdo-template">
+    <div class="row">
+      <button type="button" class="remove-btn" onclick="removeRow(this)">Remove</button>
+      <label>What is it?</label>
+      <input type="text" name="flexible_mustdo_label[]">
+    </div>
+  </template>
+
+  <button type="submit" class="submit-btn">Build my draft</button>
+</form>
+
+<script>
+  function addRow(templateId, containerId) {
+    const tpl = document.getElementById(templateId);
+    const container = document.getElementById(containerId);
+    container.appendChild(tpl.content.cloneNode(true));
+  }
+  function removeRow(button) {
+    button.closest('.row').remove();
+  }
+</script>
+{% endblock %}

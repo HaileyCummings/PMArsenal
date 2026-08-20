@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}33{% endblock %}</title>
+  <style>
+    :root { color-scheme: light; }
+    body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; max-width: 880px; margin: 0 auto; padding: 24px 16px 80px; background: #faf9f7; color: #1f2328; line-height: 1.45; }
+    h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid #e2ddd4; padding-bottom: 6px; }
+    p.muted { color: #6b6558; }
+    a { color: #a15c2f; }
+    .card { background: #fff; border: 1px solid #e8e3da; border-radius: 10px; padding: 16px 20px; margin-bottom: 16px; }
+    .row { border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; background: #fdfcfa; position: relative; }
+    .row label { display: block; font-size: 0.82rem; color: #55504a; margin: 8px 0 2px; }
+    .row input, .row select, .row textarea { width: 100%; padding: 6px 8px; border: 1px solid #d8d2c7; border-radius: 6px; font-size: 0.95rem; box-sizing: border-box; font-family: inherit; }
+    .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+    .remove-btn { position: absolute; top: 8px; right: 8px; background: none; border: none; color: #a15c2f; cursor: pointer; font-size: 0.8rem; }
+    .add-btn { background: #f1ece1; border: 1px solid #d8d2c7; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 0.9rem; }
+    .submit-btn { background: #2f5233; color: #fff; border: none; border-radius: 8px; padding: 10px 20px; font-size: 1rem; cursor: pointer; margin-top: 24px; }
+    .hint { font-size: 0.82rem; color: #6b6558; margin: -6px 0 10px; }
+    .warning { background: #fff4e5; border: 1px solid #eecb8e; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+    .day { margin-bottom: 18px; }
+    .block { border-radius: 8px; padding: 10px 14px; margin-bottom: 6px; }
+    .block.protected { background: #eef3ff; border: 1px solid #c8d6f5; }
+    .block.anchor { background: #f4f1ea; border: 1px solid #ddd5c4; }
+    .block.placed, .block.open { background: #f8f7f3; border: 1px solid #eae6db; }
+    .block small { color: #6b6558; }
+    .section-intro { color: #6b6558; margin-top: -8px; }
+  </style>
+</head>
+<body>
+  <p><a href="{{ url_for('index') }}">&larr; All trips</a></p>
+  {% block content %}{% endblock %}
+</body>
+</html>
