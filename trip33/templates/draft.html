@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ trip.destination }} — 33{% endblock %}
+{% block content %}
+<h1>{{ trip.destination }}</h1>
+<p class="muted">
+  {{ trip.start_date }} &rarr; {{ trip.end_date }} &middot; {{ trip.pace_preference }} pace
+  {% if trip.budget_min or trip.budget_max %}&middot; budget {{ trip.budget_min or "?" }}&ndash;{{ trip.budget_max or "?" }}{% endif %}
+</p>
+{% if trip.avoids %}
+  <p class="muted">Avoiding: {{ trip.avoids | join(", ") }}</p>
+{% endif %}
+
+{% if result.warnings %}
+  <h2>Needs your attention</h2>
+  {% for w in result.warnings %}
+    <div class="warning">⚠️ {{ w }}</div>
+  {% endfor %}
+{% endif %}
+
+<h2>Day-by-day draft</h2>
+{% for day, parts in result.draft.items() %}
+  <div class="day">
+    <strong>{{ day }}</strong>
+    {% for part_name in ["morning", "afternoon", "evening"] %}
+      {% set info = parts[part_name] %}
+      <div class="block {{ info.status }}">
+        <div><strong>{{ part_name | capitalize }}</strong></div>
+        {% if info['items'] %}
+          {% for item in info['items'] %}
+            <div>{{ item.label }}</div>
+          {% endfor %}
+        {% elif info.status == "protected" %}
+          <small>Protected — kept open on purpose</small>
+        {% else %}
+          <small>Open</small>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endfor %}
+{% endblock %}

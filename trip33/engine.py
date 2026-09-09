@@ -161,6 +161,16 @@ def _all_travelers_present(travelers: list[Traveler], at: datetime) -> bool:
     return True
 
 
+def _any_traveler_present(travelers: list[Traveler], at: datetime) -> bool:
+    for t in travelers:
+        if t.arrival_datetime is None or t.arrival_datetime > at:
+            continue
+        if t.departure_datetime is not None and t.departure_datetime <= at:
+            continue
+        return True
+    return False
+
+
 def _dependency_resolved(constraint_id: Optional[str], constraints_by_id: dict[str, Constraint]) -> bool:
     if constraint_id is None:
         return True
@@ -176,8 +186,11 @@ def _place_must_dos(
     slack_scores: dict[tuple[date, str], int],
 ) -> list[dict]:
     warnings = []
+    # Only blocks where at least one traveler has actually arrived (and not
+    # yet left) are real candidates — otherwise a must-do can get placed
+    # before anyone lands, just because the block scored high on slack.
     ordered_open = sorted(
-        [b for b in blocks if b.status == "open"],
+        [b for b in blocks if b.status == "open" and _any_traveler_present(travelers, b.start)],
         key=lambda b: (-slack_scores.get(b.key, 0), b.start),
     )
 
@@ -185,11 +198,9 @@ def _place_must_dos(
         linked = constraints_by_id.get(md.linked_constraint_id) if md.linked_constraint_id else None
 
         # Case A: this must-do is really a fixed_window in disguise — it was
-        # already anchored in step 1, just note it's the must-do satisfying it.
+        # already anchored in step 1 under the same label, so there's nothing
+        # left to place or display; just move on.
         if linked and linked.type == ConstraintType.FIXED_WINDOW:
-            for block in blocks:
-                if any(item.get("constraint_id") == linked.id for item in block.items):
-                    block.items.append({"label": md.label, "type": "must_do", "satisfies": linked.id})
             continue
 
         # Case B: this must-do needs the full group present.
@@ -231,8 +242,13 @@ def _place_must_dos(
 
 
 def _dependency_sweep(constraints: list[Constraint], constraints_by_id: dict[str, Constraint]) -> list[str]:
+    """Catch unresolved dependencies on any constraint except group_completeness
+    gates — those already get a more specific, must-do-oriented warning from
+    _place_must_dos, and repeating it here would just say the same thing twice."""
     warnings = []
     for c in constraints:
+        if c.type == ConstraintType.GROUP_COMPLETENESS:
+            continue
         if c.linked_dependency_id and not _dependency_resolved(c.linked_dependency_id, constraints_by_id):
             target = constraints_by_id[c.linked_dependency_id]
             msg = f"'{c.label}' depends on '{target.label}', which hasn't resolved yet"
